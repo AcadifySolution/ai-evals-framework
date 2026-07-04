@@ -1,0 +1,48 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Pytest / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Local configuration files
+.env
+.env.local
+.env.*
+
+# Output evaluation reports
+evaluation_report.json
+examples/demo_results.json
+
+# Terraform local folders & state
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
