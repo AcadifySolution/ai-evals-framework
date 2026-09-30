@@ -1,0 +1,1 @@
+# Contributing\n\nUse Python 3.11 for development. Run `pytest -q`, `ruff check .`, and `black --check .` before submitting changes. Training/evaluation behavior changes should include regression tests. Never commit secrets, datasets, generated reports, Terraform state, or provider credentials.
