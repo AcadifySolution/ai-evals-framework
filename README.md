@@ -6,7 +6,7 @@
 [![IaC: Terraform](https://img.shields.io/badge/Terraform-1.3%2B-844FBA.svg)](https://www.terraform.io/)
 [![CI: Passing](https://img.shields.io/badge/CI-Passing-brightgreen.svg)]()
 
-`ai-evals-framework` is an enterprise-grade, open-source benchmarking pipeline designed to rigorously evaluate Large Language Model (LLM) responses against ground-truth golden datasets. Built with scalability and customizability at its core, this framework offers standard metrics to measure **hallucinations (factual grounding)**, **semantic similarity**, **lexical correctness**, and **toxicity/PII leaks** in production LLM and RAG pipelines.
+`ai-evals-framework` is an production-oriented, open-source benchmarking pipeline designed to rigorously evaluate Large Language Model (LLM) responses against ground-truth golden datasets. Built with scalability and customizability at its core, this framework offers standard metrics to measure **hallucinations (factual grounding)**, **semantic similarity**, **lexical correctness**, and **toxicity/PII leaks** in production LLM and RAG pipelines.
 
 ---
 
@@ -211,7 +211,7 @@ print(f"Overall Pass Ratio: {summary['overall_pass_ratio'] * 100}%")
 
 ## Infrastructure Deployment (AWS SageMaker & RDS)
 
-The `terraform/` directory provides production-ready Infrastructure-as-Code (IaC) to host open-source LLMs under test on AWS SageMaker and capture persistent telemetry in an RDS database.
+The `terraform/` directory provides deployment-oriented Infrastructure-as-Code (IaC) to host open-source LLMs under test on AWS SageMaker and capture persistent telemetry in an RDS database.
 
 ### Features
 *   **VPC Architecture:** Creates public/private subnets across multiple Availability Zones, locking down the database in the private subnets.
@@ -250,4 +250,4 @@ pytest tests/
 
 ## License
 
-This project is licensed under the MIT License. See [LICENSE](file:///Users/acadify/Desktop/ai-evals-framework/LICENSE) for more details.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
