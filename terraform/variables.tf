@@ -1,67 +1,71 @@
 variable "aws_region" {
-  description = "Target AWS Region for resources"
-  type        = string
-  default     = "us-east-1"
+  description = "Target AWS Region"
+  type = string
+  default = "us-east-1"
 }
 
 variable "environment" {
-  description = "Target execution environment (dev, staging, prod)"
-  type        = string
-  default     = "prod"
+  description = "Deployment environment"
+  type = string
+  default = "dev"
+  validation {
+    condition = contains(["dev", "staging", "prod"], var.environment)
+    error_message = "environment must be dev, staging, or prod."
+  }
 }
 
 variable "project_name" {
-  description = "Name identifier for resource tagging"
-  type        = string
-  default     = "ai-evals-framework"
+  description = "Resource name prefix"
+  type = string
+  default = "ai-evals-framework"
 }
 
 variable "vpc_cidr" {
-  description = "IP block configuration for isolated VPC"
-  type        = string
-  default     = "10.0.0.0/16"
+  description = "VPC CIDR"
+  type = string
+  default = "10.0.0.0/16"
 }
 
 variable "db_instance_class" {
-  description = "RDS DB Instance type for eval logs storage"
-  type        = string
-  default     = "db.t4g.micro"
+  description = "RDS instance class"
+  type = string
+  default = "db.t4g.micro"
 }
 
 variable "db_name" {
-  description = "PostgreSQL initial database name"
-  type        = string
-  default     = "aievalsdb"
+  description = "PostgreSQL database name"
+  type = string
+  default = "aievalsdb"
 }
 
 variable "db_username" {
-  description = "PostgreSQL administrator login name"
-  type        = string
-  default     = "evaladmin"
+  description = "PostgreSQL application username"
+  type = string
+  default = "evalapp"
 }
 
 variable "db_password" {
-  description = "PostgreSQL administrator password (should be set via TF_VAR_db_password)"
-  type        = string
-  sensitive   = true
-  default     = "SuperSecurePassword123!"
+  description = "PostgreSQL password supplied via TF_VAR_db_password or an external secret manager."
+  type = string
+  sensitive = true
+  default = null
 }
 
 variable "sagemaker_instance_type" {
-  description = "GPU computing power type for hosting the LLM under test"
-  type        = string
-  default     = "ml.g5.2xlarge" # Default single GPU (A10G) suitable for 7B-8B parameter models
+  description = "SageMaker GPU instance type"
+  type = string
+  default = "ml.g5.2xlarge"
 }
 
 variable "huggingface_model_id" {
-  description = "The target model repository identifier from HF Hub"
-  type        = string
-  default     = "meta-llama/Meta-Llama-3-8B-Instruct"
+  description = "Hugging Face model identifier"
+  type = string
+  default = "meta-llama/Meta-Llama-3-8B-Instruct"
 }
 
 variable "huggingface_api_token" {
-  description = "Hugging Face Access Token for gated models (e.g. Llama 3)"
-  type        = string
-  sensitive   = true
-  default     = "hf_placeholder"
+  description = "Hugging Face token supplied at deployment time."
+  type = string
+  sensitive = true
+  default = null
 }
