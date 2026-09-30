@@ -1,53 +1,62 @@
+from __future__ import annotations
+
 import os
-from typing import Dict, Any, Optional
-from pydantic import BaseModel, Field, SecretStr
+from typing import Optional
+
+from pydantic import BaseModel, Field, SecretStr, field_validator
 
 
 class LLMConfig(BaseModel):
-    """Configuration for LLMs used as judges or evaluators."""
-    provider: str = Field(default="openai", description="LLM provider (e.g., openai, anthropic, custom)")
-    model_name: str = Field(default="gpt-4o-mini", description="Model identifier for evaluations")
-    temperature: float = Field(default=0.0, description="Temperature parameter for deterministic grading")
-    api_key: Optional[SecretStr] = Field(default=None, description="API Key for the provider (fallback to env)")
-    api_base: Optional[str] = Field(default=None, description="Custom API endpoint (useful for self-hosted or proxy)")
-    max_tokens: int = Field(default=1000, description="Max tokens to generate in evaluator outputs")
+    provider: str = Field(default="openai")
+    model_name: str = Field(default="gpt-4o-mini", min_length=1, max_length=200)
+    temperature: float = Field(default=0.0, ge=0.0, le=2.0)
+    api_key: Optional[SecretStr] = None
+    api_base: Optional[str] = None
+    max_tokens: int = Field(default=1000, ge=1, le=10000)
+
+    @field_validator("provider")
+    @classmethod
+    def validate_provider(cls, value: str) -> str:
+        value = value.strip().lower()
+        allowed = {"openai", "anthropic", "custom"}
+        if value not in allowed:
+            raise ValueError(f"provider must be one of: {', '.join(sorted(allowed))}")
+        return value
 
 
 class DatabaseConfig(BaseModel):
-    """Database configuration for storing persistent execution logs."""
-    connection_string: Optional[str] = Field(default=None, description="DB Connection string (SQLAlchemy compatible)")
-    enabled: bool = Field(default=False, description="Whether to persist results in external database")
-    project_id: str = Field(default="default-project", description="Project identifier to group evaluation runs")
+    connection_string: Optional[SecretStr] = None
+    enabled: bool = False
+    project_id: str = Field(default="default-project", min_length=1, max_length=200)
 
 
 class MetricThresholds(BaseModel):
-    """Threshold standards to pass evaluation assertions."""
-    hallucination_threshold: float = Field(default=0.8, description="Minimum score to consider response hallucination-free")
-    semantic_similarity_threshold: float = Field(default=0.75, description="Minimum embedding similarity score")
-    correctness_threshold: float = Field(default=0.7, description="Minimum accuracy score (lexical or LLM grading)")
-    toxicity_threshold: float = Field(default=0.1, description="Maximum tolerance score for toxic content")
+    hallucination_threshold: float = Field(default=0.8, ge=0.0, le=1.0)
+    semantic_similarity_threshold: float = Field(default=0.75, ge=0.0, le=1.0)
+    correctness_threshold: float = Field(default=0.7, ge=0.0, le=1.0)
+    toxicity_threshold: float = Field(default=0.1, ge=0.0, le=1.0)
 
 
 class EvaluationConfig(BaseModel):
-    """Root evaluation configurations."""
     llm: LLMConfig = Field(default_factory=LLMConfig)
     db: DatabaseConfig = Field(default_factory=DatabaseConfig)
     thresholds: MetricThresholds = Field(default_factory=MetricThresholds)
-    concurrency_limit: int = Field(default=5, description="Max concurrent threads for remote evaluation calls")
-    verbose: bool = Field(default=True, description="Enable detailed logging of evaluations")
+    concurrency_limit: int = Field(default=5, ge=1, le=64)
+    verbose: bool = True
 
     @classmethod
     def load_from_env(cls) -> "EvaluationConfig":
-        """Instantiates configurations from environment variables."""
         return cls(
             llm=LLMConfig(
                 provider=os.getenv("EVALS_LLM_PROVIDER", "openai"),
                 model_name=os.getenv("EVALS_LLM_MODEL", "gpt-4o-mini"),
                 temperature=float(os.getenv("EVALS_LLM_TEMPERATURE", "0.0")),
+                api_key=SecretStr(os.environ["OPENAI_API_KEY"]) if os.getenv("OPENAI_API_KEY") else None,
                 api_base=os.getenv("EVALS_LLM_API_BASE"),
+                max_tokens=int(os.getenv("EVALS_LLM_MAX_TOKENS", "1000")),
             ),
             db=DatabaseConfig(
-                connection_string=os.getenv("EVALS_DB_CONNECTION"),
+                connection_string=SecretStr(os.environ["EVALS_DB_CONNECTION"]) if os.getenv("EVALS_DB_CONNECTION") else None,
                 enabled=os.getenv("EVALS_DB_ENABLED", "false").lower() == "true",
                 project_id=os.getenv("EVALS_PROJECT_ID", "default-project"),
             ),
