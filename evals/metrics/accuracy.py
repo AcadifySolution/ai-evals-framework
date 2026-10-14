@@ -1,5 +1,6 @@
 import re
-from typing import Dict, Any, List
+from itertools import pairwise
+
 from evals.dataset import EvaluationSample
 from evals.metrics.base import BaseMetric, MetricResult
 
@@ -25,7 +26,7 @@ class AccuracyMetric(BaseMetric):
                 score=0.0,
                 passed=False,
                 reason="Skipped: Ground truth is not provided. Cannot compute lexical accuracy.",
-                metadata={"method": "skipped"}
+                metadata={"method": "skipped"},
             )
 
         # Tokenize text
@@ -38,7 +39,7 @@ class AccuracyMetric(BaseMetric):
                 score=0.0,
                 passed=False,
                 reason="Tokenization yielded empty sequences for ground truth or output.",
-                metadata={}
+                metadata={},
             )
 
         # 1. Exact Match (case insensitive)
@@ -54,7 +55,11 @@ class AccuracyMetric(BaseMetric):
         bleu = self._bleu_approx(gt_tokens, out_tokens)
 
         # Select primary score
-        score = rouge_l if self.primary_metric == "rouge" else (bleu if self.primary_metric == "bleu" else exact_match)
+        score = (
+            rouge_l
+            if self.primary_metric == "rouge"
+            else (bleu if self.primary_metric == "bleu" else exact_match)
+        )
         passed = score >= self.threshold
 
         reason = (
@@ -71,15 +76,15 @@ class AccuracyMetric(BaseMetric):
                 "exact_match": exact_match,
                 "rouge_l": rouge_l,
                 "bleu": bleu,
-                "primary_metric": self.primary_metric
-            }
+                "primary_metric": self.primary_metric,
+            },
         )
 
-    def _tokenize(self, text: str) -> List[str]:
+    def _tokenize(self, text: str) -> list[str]:
         """Lowers text and extracts word tokens."""
-        return re.sub(r'[^\w\s]', '', text.lower()).split()
+        return re.sub(r"[^\w\s]", "", text.lower()).split()
 
-    def _lcs(self, x: List[str], y: List[str]) -> int:
+    def _lcs(self, x: list[str], y: list[str]) -> int:
         """Computes Longest Common Subsequence length using dynamic programming."""
         m, n = len(x), len(y)
         dp = [[0] * (n + 1) for _ in range(m + 1)]
@@ -93,7 +98,7 @@ class AccuracyMetric(BaseMetric):
 
         return dp[m][n]
 
-    def _bleu_approx(self, reference: List[str], candidate: List[str]) -> float:
+    def _bleu_approx(self, reference: list[str], candidate: list[str]) -> float:
         """Computes a simplified BLEU score (unigram and bigram overlap with brevity penalty)."""
         # Unigrams
         ref_unigrams = set(reference)
@@ -102,16 +107,17 @@ class AccuracyMetric(BaseMetric):
         p1 = unigram_matches / len(candidate) if candidate else 0
 
         # Bigrams
-        ref_bigrams = set(zip(reference[:-1], reference[1:]))
-        cand_bigrams = list(zip(candidate[:-1], candidate[1:]))
+        ref_bigrams = set(pairwise(reference))
+        cand_bigrams = list(pairwise(candidate))
         bigram_matches = sum(1 for bg in cand_bigrams if bg in ref_bigrams)
         p2 = bigram_matches / len(cand_bigrams) if cand_bigrams else 0
 
         # Geometric mean of precisions
         import math
+
         if p1 == 0:
             return 0.0
-        
+
         # Heuristic combination
         p_geom = math.sqrt(p1 * (p2 if p2 > 0 else p1))
 

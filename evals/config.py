@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-from typing import Optional
 
 from pydantic import BaseModel, Field, SecretStr, field_validator
 
@@ -10,8 +9,8 @@ class LLMConfig(BaseModel):
     provider: str = Field(default="openai")
     model_name: str = Field(default="gpt-4o-mini", min_length=1, max_length=200)
     temperature: float = Field(default=0.0, ge=0.0, le=2.0)
-    api_key: Optional[SecretStr] = None
-    api_base: Optional[str] = None
+    api_key: SecretStr | None = None
+    api_base: str | None = None
     max_tokens: int = Field(default=1000, ge=1, le=10000)
 
     @field_validator("provider")
@@ -25,7 +24,7 @@ class LLMConfig(BaseModel):
 
 
 class DatabaseConfig(BaseModel):
-    connection_string: Optional[SecretStr] = None
+    connection_string: SecretStr | None = None
     enabled: bool = False
     project_id: str = Field(default="default-project", min_length=1, max_length=200)
 
@@ -45,18 +44,24 @@ class EvaluationConfig(BaseModel):
     verbose: bool = True
 
     @classmethod
-    def load_from_env(cls) -> "EvaluationConfig":
+    def load_from_env(cls) -> EvaluationConfig:
         return cls(
             llm=LLMConfig(
                 provider=os.getenv("EVALS_LLM_PROVIDER", "openai"),
                 model_name=os.getenv("EVALS_LLM_MODEL", "gpt-4o-mini"),
                 temperature=float(os.getenv("EVALS_LLM_TEMPERATURE", "0.0")),
-                api_key=SecretStr(os.environ["OPENAI_API_KEY"]) if os.getenv("OPENAI_API_KEY") else None,
+                api_key=(
+                    SecretStr(os.environ["OPENAI_API_KEY"]) if os.getenv("OPENAI_API_KEY") else None
+                ),
                 api_base=os.getenv("EVALS_LLM_API_BASE"),
                 max_tokens=int(os.getenv("EVALS_LLM_MAX_TOKENS", "1000")),
             ),
             db=DatabaseConfig(
-                connection_string=SecretStr(os.environ["EVALS_DB_CONNECTION"]) if os.getenv("EVALS_DB_CONNECTION") else None,
+                connection_string=(
+                    SecretStr(os.environ["EVALS_DB_CONNECTION"])
+                    if os.getenv("EVALS_DB_CONNECTION")
+                    else None
+                ),
                 enabled=os.getenv("EVALS_DB_ENABLED", "false").lower() == "true",
                 project_id=os.getenv("EVALS_PROJECT_ID", "default-project"),
             ),
