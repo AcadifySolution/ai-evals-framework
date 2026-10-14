@@ -1,1 +1,9 @@
-pydantic>=2,<3\nopenai>=1,<3\nnumpy>=1.24,<3\npandas>=2,<3\npython-dotenv>=1,<2\nnltk>=3.8,<4\njinja2>=3,<4\nrequests>=2.31,<3\nscikit-learn>=1.4,<2\n
+pydantic>=2,<3
+openai>=1,<3
+numpy>=1.24,<3
+pandas>=2,<3
+python-dotenv>=1,<2
+nltk>=3.8,<4
+jinja2>=3,<4
+requests>=2.31,<3
+scikit-learn>=1.4,<2

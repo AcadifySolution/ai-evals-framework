@@ -43,7 +43,9 @@ class Evaluator:
             results[metric.name] = result
         return results
 
-    def evaluate_dataset(self, dataset: GroundTruthDataset) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    def evaluate_dataset(
+        self, dataset: GroundTruthDataset
+    ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
         started = time.perf_counter()
         samples = dataset.samples
         ordered: list[dict[str, Any] | None] = [None] * len(samples)
@@ -97,7 +99,9 @@ class Evaluator:
         summary: dict[str, Any] = {
             "total_samples": total,
             "passed_samples": sum(bool(r.get("passed")) for r in results),
-            "overall_pass_ratio": (sum(bool(r.get("passed")) for r in results) / total) if total else 0.0,
+            "overall_pass_ratio": (
+                (sum(bool(r.get("passed")) for r in results) / total) if total else 0.0
+            ),
             "execution_duration_sec": round(duration, 6),
             "metrics": {},
         }

@@ -40,8 +40,6 @@ def test_evaluator_requires_unique_metrics():
 
 
 def test_accuracy_without_ground_truth_is_explicitly_failed():
-    result = AccuracyMetric().evaluate(
-        EvaluationSample(query="Q", generated_output="A")
-    )
+    result = AccuracyMetric().evaluate(EvaluationSample(query="Q", generated_output="A"))
     assert result.passed is False
     assert result.metadata["method"] == "skipped"

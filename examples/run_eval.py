@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
+import json
 import os
 import sys
-import json
 
 # Ensure parent directory is in path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -9,9 +9,9 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from evals.config import EvaluationConfig
 from evals.dataset import GroundTruthDataset
 from evals.evaluator import Evaluator
+from evals.metrics.accuracy import AccuracyMetric
 from evals.metrics.hallucination import HallucinationMetric
 from evals.metrics.semantic import SemanticSimilarityMetric
-from evals.metrics.accuracy import AccuracyMetric
 from evals.metrics.toxicity import ToxicityMetric
 
 
@@ -43,14 +43,16 @@ def run_demo():
     # In the absence of an API key, metrics fallback to deterministic regex/vectorizers
     metrics = [
         HallucinationMetric(threshold=config.thresholds.hallucination_threshold, config=config),
-        SemanticSimilarityMetric(threshold=config.thresholds.semantic_similarity_threshold, config=config),
+        SemanticSimilarityMetric(
+            threshold=config.thresholds.semantic_similarity_threshold, config=config
+        ),
         AccuracyMetric(threshold=config.thresholds.correctness_threshold, primary_metric="rouge"),
-        ToxicityMetric(threshold=config.thresholds.toxicity_threshold, config=config)
+        ToxicityMetric(threshold=config.thresholds.toxicity_threshold, config=config),
     ]
 
     # 5. Initialize Evaluator & Execute
     evaluator = Evaluator(metrics=metrics, config=config)
-    
+
     print("\nExecuting evaluation pipeline...")
     detailed_results, summary = evaluator.evaluate_dataset(dataset)
 
@@ -67,9 +69,11 @@ def run_demo():
     print(f"Passed Samples:     {summary.get('passed_samples')} / {summary.get('total_samples')}")
     print(f"Time Taken:         {summary.get('execution_duration_sec', 0.0):.4f} seconds")
     print("-" * 60)
-    
+
     for metric_name, stats in summary.get("metrics", {}).items():
-        print(f"Metric: {metric_name:<20} | Average Score: {stats['mean_score']:.4f} | Pass Rate: {stats['pass_ratio']*100:.1f}%")
+        print(
+            f"Metric: {metric_name:<20} | Average Score: {stats['mean_score']:.4f} | Pass Rate: {stats['pass_ratio']*100:.1f}%"
+        )
     print("=" * 60 + "\n")
 
 

@@ -4,23 +4,23 @@ An enterprise-grade package for evaluating LLM responses against ground-truth da
 """
 
 from evals.config import EvaluationConfig
-from evals.dataset import GroundTruthDataset, EvaluationSample
+from evals.dataset import EvaluationSample, GroundTruthDataset
 from evals.evaluator import Evaluator
+from evals.metrics.accuracy import AccuracyMetric
 from evals.metrics.base import BaseMetric
 from evals.metrics.hallucination import HallucinationMetric
 from evals.metrics.semantic import SemanticSimilarityMetric
-from evals.metrics.accuracy import AccuracyMetric
 from evals.metrics.toxicity import ToxicityMetric
 
 __version__ = "0.1.0"
 __all__ = [
+    "AccuracyMetric",
+    "BaseMetric",
     "EvaluationConfig",
-    "GroundTruthDataset",
     "EvaluationSample",
     "Evaluator",
-    "BaseMetric",
+    "GroundTruthDataset",
     "HallucinationMetric",
     "SemanticSimilarityMetric",
-    "AccuracyMetric",
     "ToxicityMetric",
 ]
